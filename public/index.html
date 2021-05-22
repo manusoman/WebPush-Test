@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebPush Test</title>
+    <link rel="shortcut icon" type="image/x-icon" href="res/favicon.svg" />
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+
+<input id="AN" type="button" value="Allow Notifications">
+<input id="ASW" type="button" value="Start ServiceWorker">
+
+
+<script src="src/app.js"></script>
+<script>
+
+function initServiceWorker(e) {
+    e.stopPropagation();
+
+    if ('serviceWorker' in navigator) {
+        const P1 = navigator.serviceWorker.register('./sw.js', { scope : '/' }),
+            P2 = getPushSubOpts();
+
+        Promise.all([P1, P2])
+        .then(a => {
+            a[0].pushManager.getSubscription()
+            .then(sub => {
+                if(sub) {
+                    managePushSubscription(sub);
+                } else {
+                    a[0].pushManager.subscribe(a[1])
+                    .then(managePushSubscription)
+                    .catch(err => { throw err });
+                }
+            })
+            .catch(console.log);
+        })
+        .catch(console.log);
+    }
+}
+
+document.getElementById('ASW').addEventListener('click', initServiceWorker, true);
+
+</script>
+</body>
+</html> 
